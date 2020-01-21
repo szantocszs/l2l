@@ -1,0 +1,272 @@
+﻿================================
+== Bevezetés és előkészületek ==
+================================
+1.1. A projekt célja, kódtár létrehozása
+------------------------------------------------
+github.com-on létrehozunk egy új repository-t
+
+https://github.com/new
+Repository name: l2l
+
+public
+
+[X] Initialize this repository with a README 
+
+Add .gitignore: Visual Studio
+Add license: MIT License
+
+1.2 Clone, vscode
+------------------------------------------------
+
+github.com clone https://github.com/szantocszs/l2l.git
+
+cd l2l
+code .
+
+.gitignore
+README
+
+1.3 Alapvetések
+------------------------------------------------
+README.md fileba írás
+
+# l2l  
+(I would) like to learn
+
+## Alapvetések
+Az alapvetések célja, hogy egyértelmű alapokat biztosítson eldönteni, hogy hol állunk, merre megyünk, mit célzunk és mit nem a munkánkkal.
+
+- Olyan technológiát használunk, amit jelenleg programozóként a profik használnak és még jó darabig fejlődőképes marad (dotnet core).
+- Olyan eszközöket használunk, amit a profi programozók is használnak.
+- Olyan feladatot választunk, amit nem kell terveznünk, már létezik és körbejárható
+- A tervet úgy készítjük, hogy később továbbfejleszthető legyen
+
+1.4 Vázlat
+------------------------------------------------
+README.md fileba írás
+
+## Vázlat
+Vázlatunk célja megnevezni az egymásra épülő alkalmazásainkat és megrajzolni az összefüggéseket.
+
+- elsődleges cél: egy webalkalmazás készítése (MVC)
+- továbbfejlesztés: az adatok szolgáltatása és az üzleti logika elérése webapin keresztül (MVC)
+- továbbfejlesztés: desktop alkalmazás készítése a webapira alapozva (WPF)
+- mobil alkalmazás készítése a webapira alapozva (Xamarin)
+- továbbfejlesztés: SPA: Single Page Application készítése a webapira alapozva (Blazor)
+
+1.5 Terv
+------------------------------------------------
+## Webalkalmazás
+Készítsünk egy (továbbfejleszthető) oktató alkalmazást, ahova 
+  - oktatók tudnak tanfolyamokat feltölteni, valamint 
+  - hallgatók tudnak ilyen tanfolyamokat elvégezni
+
+Ez egy jól áttekinthető, mégis kellően összetett feladat, ahol a full-stack C# fejlesztés minden részébe bepillanthatunk, immár a profi fejlesztő szemével.dot
+
+github-on issue létrehozása és ehhez az issuhoz történő commitlásá következik.
+ISSUE: Alapvetések, dokumentáció, fundamentális döntések
+
+COMMIT: #1: Alapvetések, vázlat, terv 
+Ezzel hozzáfűződik az ISSUS-hoz a commit. 
+
+===========================
+== Architectúra kereéses ==
+===========================
+2.1
+Az MVC az adat (Model), a vezérlő (Controller) és a nézet (View) hármasa, induljunk ki ebből és nézzük mi lenne a legegyszerűbb?
+
+           DB                              MVC WebApp
+      +-----------------+             +--------------------------------------+
+      |                 |             |                                      |
+      |                 |             |                                      |
+      |                 |             | +-------+  +----------+  +---------+ |
+      |                 | +-------->  | |       |  |          |  |         | |
+      |                 |             | | EF    |  |Controller|  | View    | |
+      |                 | <--------+  | | Model |  |          |  |         | |
+      |                 |             | |       |  |          |  |         | |
+      |                 |             | +-------+  +----------+  +---------+ |
+      |                 |             |                                      |
+      +-----------------+             +--------------------------------------+
+
+
+Mivel az Entity Framework gyakorlatilag "tükrözi" az adatbázist, lehetne ez az MVC modelje, és már csak a vezérlő és a nézet kell. 
+Igen ám, de mi legyen az API-val ekkor később? Annak minimum az adatokhoz hozzá kell férnie!
+
+2.2 Második vázlat
+
+       DB                            EF Model                            MVC WebApp
+    +-----------------+           +----------------------+           +--------------------------------------+
+    |                 |           |                      |           |                                      |
+    |                 | +-------> |                      | +------>  |                                      |
+    |                 |           |                      |           | +-------+  +----------+  +---------+ |
+    |                 | <-------+ |                      | <------+  | |       |  |          |  |         | |
+    |                 |           |                      |           | | View  |  |Controller|  | View    | |
+    |                 |           |                      |           | | Model |  |          |  |         | |
+    |                 |           |                      |           | |       |  |          |  |         | |
+    |                 |           |                      |           | +-------+  +----------+  +---------+ |
+    |                 |           |                      |           |                                      |
+    +-----------------+           +----------------------+           +--------------------------------------+
+
+2.3 Architektúra végleges - amit készíteni fogunk
+																	
+	   DB                            Repository                     Service              MVC WebApp
+	+-----------------+           +----------------------+          +-----------+        +--------------------------------------+
+	|                 |           |                      |          |           |        |                                      |
+	|                 | +-------> | +------+             | +------> |           | <----+ |                                      |
+	|                 |           | |      |             |          |           |        | +-------+  +----------+  +---------+ |
+	|                 | <-------+ | |EF    |             | <------+ |           | +----> | |       |  |          |  |         | |
+	|                 |           | |      |             |          |           |        | | View  |  |Controller|  | View    | |
+	|                 |           | |Model |             |          |           |        | | Model |  |          |  |         | |
+	|                 |           | |      |             |          |           |        | |       |  |          |  |         | |
+	|                 |           | +------+             |          |           |        | +-------+  +----------+  +---------+ |
+	|                 |           |                      |          |           |        |                                      |
+	+-----------------+           +----------------------+          +-----------+        +--------------------------------------+
+
+======================================================
+== OOD-alapelvek vizsgálata az architectúrán
+======================================================
+
+## Objektumorientált tervezési gondolatok (OOD)
+
+3.2 Definiciók - low coupling gyenge csatolás
+
+- **Csatolás *(Coupling)*:** ha egy elem függ más elemektől, akkor ezek az elemek csatolásban vannak. 
+- **gyenge *(Low)*** ez a csatolás abban az esetben, ha a csatolásban lévő elemek esetén egy változás továbbterjedése megállítható.
+
+Első célunk tehát: a **gyenge csatolás (*Low Coupling*)**  elérése a dobozaink között.
+
+3.3 Definiciók - high cohesion
+
+- **Kohézió *(Cohesion)*:** Egy elem felelősségeinek egymáshoz való kapcsolata.
+- a kohézió **gyenge (*low*)**, ha az adott elemnek túl sok egymástól független felelőssége van.
+-  a kohézió **erős (*high*)**, ha az adott elem felelősségei erősen összefüggnek és nagyon koncentráltak.
+
+Célunk tehát az **Erős kohézió *(High Cohesion)*** elérése a dobozokon belül.
+
+3.4 Költségek - Indirekció
+
+- Költségek (vajon megéri?)
+  - Függ a rendelkezésre álló erőforrás mértékétől.
+  - Függ a rendelkezésre álló időtől is.
+  - És leginkább az alkalmazás élettartamától függ.
+
+3.5 Felelősségi körök meghatározása, bevezetés
+
+======================================================
+== Adatokhoz hozzáférés felelősségei 
+======================================================
+## Feladatok, felelősségi körök
+
+### DB 
+keresés ec core db support
+
+- legyen [ef core támogatásal bír](https://docs.microsoft.com/en-us/ef/core/providers/)
+  - adatbázis tervezés és telepítés
+- [docker container](https://hub.docker.com) támogatás
+- kezdetben sqlight, majd kibővítjük ms sql-re
+
+4.4 Kockázatok felmérése
+- Kockázatok
+  - teljesítmény
+  - relációs adatbázisok
+
+További gondolatok: [műszaki adósság](https://netacademia.blog.hu/2016/06/21/a_muszaki_adossag_fogalma)
+
+======================================================
+A webes felület felelősségei
+======================================================
+
+### Web UI
+5.1 A http-kapcsolat
+- http kérés fogadása és válasz küldése
+  MVC keretrendszer
+  
+5.2 Felhasználók azonosítása - Authentication
+- felhasználó azonosítás (authentikation)
+  ASP.NET Core Identity
+  
+5.3 Jogosultságkezelés - Authorization
+- jogosultságkezelés (authorization)
+  ASP.NET Core Identity
+
+5.4 Adatok ellenőrzése - Validation
+
+5.5 Kockázatok
+
+======================================================
+== A repository modul felelősségei 
+======================================================
+
+### Repository
+- CRUD műveletek elvégzése (**C**reate, **R**ead, **U**pdate, **D**elete)
+- Listázás (Szűrés, sorbarendezés és lapozás)
+- offline adatokat szolgáltat 
+  Sosem nem ad vissza IQueryable példányt
+- adatmodell-eket szolgáltat
+  külön kimeneti modell osztályokat nem fog használni.
+- LINQ-t csak itt használunk
+
+- Kockázatok
+
+6.3 A szerviz modul felelősségei
+
+### Service
+- transzformáció az adatmodell és a viewmodel között (Data mapping
+- Validálás a ViewModel képességeit meghaladó esetben.
+- Minden, amit eddig nem említettünk
+
+- Kockázatok
+
+## Továbbiak
+- docker containeres fejlesztési környezet
+- visual studio code
+
+
+================================
+== 2. Entity Framework Core bevezetés SQLite adatbázis használatával
+================================
+
+Forráskókvázlat kialakítása
+
+1.1 Visual Stucio Code-kiterjesztések a C# fejlesztéshez
+Kiterjesztések telepítése:
+C#
+C# Extensions
+C# XML Documentation
+
+1.2 A forráskódstruktúra tervezése
+
+Projektek
+- l2l.Data
+	- l2l.Data
+	- l2l.Repository
+- l2l.WebUI
+	- l2l.Service
+	- l2l.WebUI
+	
+
+1.3 Könyvtárak kialakítása
+VS Codeban hozzuk létre ezt a két könyvtárat.
+l2l.Data
+l2l.WebUI
+
+1.4 Az adatok kezeléséhez szükséges l2l.Data projekt létrehozása
+
+jobb gomb a Data folder
+
+dotnet new - Kiírja milyen .NET projekteket lehet létrehozni. dotnet cli parancsok
+
+data egyszerű dll ami a "classlib" Template 
+töröljük a class1.cs az most nem szükséges
+
+dotnet new classlib
+
+1.5 A webes felülethez l2l.WebUI projekt és könyvtárak létrehozása
+  nyissunk terminál ablakot a WebUI könyvtárban
+
+dotnet new mvc 
+ha nem adunk meg nevet akkor a könyvtárral megegyező nevű projektet hoz létre.
+
+addjuk hozzá a Service mappát a WebUI konyvtár alatt.
+
+1.6 l2l.WebUI projekt gyors áttekintő
