@@ -394,3 +394,26 @@ dotnet ef migrations list
 
 2.12 A fejezet zárás - git commit
 
+-------------------------------------------------------
+-- Adatok sqlite adatbázisba írása és EF Core Migrations
+-------------------------------------------------------
+
+3.1 Dotnet EF add migrations - Course tábla létrehozása
+
+dotnet ef migrations add "create Course table"
+
+3.2 Migrations könyvtár
+
+3.3 Első database update - SQLite db létrehozása
+
+dotnet ef database update
+
+3.4 SQLite db schema ellenőrzése a vscode segítségével
+
+sqlite explorer vscode addin teleptés majd a command paletta-n 
+kiadni az sqlite opendatabase parancsot
+
+3.5 SQLite db schema ellenőrzése a DB Browser for SQLite használatával
+
+https://sqlitebrowser.org/
+
