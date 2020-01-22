@@ -270,3 +270,127 @@ ha nem adunk meg nevet akkor a könyvtárral megegyező nevű projektet hoz lét
 addjuk hozzá a Service mappát a WebUI konyvtár alatt.
 
 1.6 l2l.WebUI projekt gyors áttekintő
+
+1.7 l2l.WebUI projekt első futtatása
+
+dotnet run
+
+kilépés a futtatásból Ctrl + C
+
+================================
+== Entity Framework Core és a DbContext létrehozása 1. kör
+================================
+
+2.1 EF Core - Indító
+
+2.2 DbContext bevezetés
+
+Osztály hozzáadása
+
+    public class L2lDbContext : DbContext
+    {
+        
+    }
+
+2.3 Szükséges nuget csomagok
+
+Navigáljunk a https://www.nuget.org/
+Keressünk rá a entityframeworkcore csomagra
+
+Nézzük meg a .NET CLI telepítő parancsot. Válasszuk a 
+legutóbbi nem preview változatát az EF Corenak
+
+dotnet add package Microsoft.EntityFrameworkCore --version 3.1.1
+
+bekerül a csproj-ba a nuget csomagunk 
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.1" />
+  </ItemGroup>
+
+2.4 using és dbset használata
+Fixáljuk a DbContext hibát
+
+Ctrl . -el feloldjuk a hiányzó usingot
+
+public DbSet<Course> Courses { get; set; }
+
+2.5 Paraméterátvétel a létrehozó segítségével - Constructor
+
+Adatbázis generálás a kód alapján
+
+konstruktor hozzáadása a DbContexthez
+
+2.6 Első probléma - NetStandardError
+
+Migrációs lépés hozzáadása...
+
+dotnet ef migrations list
+
+hibára fut...
+
+Projekt fileban lévő kifejezés azt jelenti, hogy a
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  A cél amire fordítanunk kell az nem egy futtató környezet hanem egy definíció a netstandard2.0.
+  Ez egy definíció egy leírás, hogy a futtató környezetnek mit kell tudnia.
+
+  2.7 Probléma megoldása - targetframework beállítás
+
+Ha nem lenne telepítve a dotnet-ef tool parancsok akkor a következő parancssal 
+lehetne telepíteni.
+  dotnet tool install --global dotnet-ef
+
+dotnet ef migrations list
+
+Hibaüzenet:
+ Your startup project 'l2l.Data' doesn't reference Microsoft.EntityFrameworkCore.Design. This package 
+is required for the Entity Framework Core Tools to work. Ensure your startup project is correct, 
+install the package, and try again.
+
+Nem tudja végrehajtani a parancsot mert nincsen referencia az MS EFCore.Design dll-re
+
+dotnet add package Microsoft.EntityFrameworkCore.Design --version 3.1.1
+
+Hibaüzenet:
+Unable to create an object of type 'L2lDbContext'. For the different patterns supported
+ at design time, see https://go.microsoft.com/fwlink/?linkid=851728
+
+2.8 A dotnet parancssorhoz DbContextFactory implementáció kell
+
+ Elakadt az EF mert nem tudott DbContext példányt létrehozni. Segíteni kell neki, hogy tudjon példányosítani.
+
+
+    public class L2lDbContextFactory : IDesignTimeDbContextFactory<L2lDbContext>
+    {
+        public L2lDbContext CreateDbContext(string[] args)
+        {
+            throw new System.NotImplementedException();
+        }
+    }
+
+2.9 Vázlat kialakítása
+
+            var builder = new DbContextOptionsBuilder<L2lDbContext>();            
+            builder.UseSqlite("");
+            var options = builder.Options;            
+            return new L2lDbContext(options);
+
+2.10 nuget csomag a UseSqlite függvényhez
+
+Nuget Package Manager Extensions
+View Menu\Comman paletta
+
+2.11 connectionstring az SQLite-hoz egyelőre fixen beégetve
+
+https://www.connectionstrings.com/
+
+Basic
+Data Source=c:\mydb.db;Version=3;
+
+dotnet ef migrations list
+
+2.12 A fejezet zárás - git commit
+
