@@ -417,3 +417,25 @@ kiadni az sqlite opendatabase parancsot
 
 https://sqlitebrowser.org/
 
+-----------------------------------------------------------
+-- 3. xUnit bevezetés - az első működő xUnit tesztig - CRUD Create tesztje
+-----------------------------------------------------------
+
+Hozzunk létre l2l.Data.Test mappát
+
+dotnet new xUnit 
+test projekt létrehozása
+
+dotnet test 
+teszt futtatása
+
+dotnet test -v n
+részletes infók
+
+
+Az első teszt készítése
+2.1 Előkészületek és a feladat elvégzése - Arrange _ Act
+
+Data projekt referencia hozzáadása a test projekthoz
+dotnet add reference ..\l2l.Data\l2l.Data.csproj
+
